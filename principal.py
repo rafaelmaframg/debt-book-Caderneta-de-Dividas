@@ -3,9 +3,6 @@ from funcoes import *
 linha = "-----------------------------------------------"
 msg = "Bem Vindo Ao Programa de Cadastros"
 
-
-
-
 #intro programa
 print("~"*(len(msg)+8))
 print("  ",msg)

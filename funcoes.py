@@ -1,12 +1,12 @@
 from openpyxl import load_workbook,Workbook
-from openpyxl.xml.constants import MAX_ROW
+from datetime import date
 
 try:
     arquivo = load_workbook("devedores.xlsx")    
 except:
     arquivo = Workbook()
     
-linha = "-----------------------------------------------"
+linha = "----------------------------------------------------"
 planilha1 = arquivo.active
 
 def menu():
@@ -16,7 +16,11 @@ def menu():
         print("[2] - Listar Devedores")
         print('[3] - Deletar dados cliente')
         print("[4] - Sair do Programa")
-        op = int(input())
+        try:
+            op = int(input())
+        except:
+            print("Opção Invalida")
+            menu()
         print(linha)
         if op == 1:
             cadastro()
@@ -27,18 +31,20 @@ def menu():
             exit()
         elif op == 3:
             excluiusuario()
-            arquivo.save('devedores.xls')
+            arquivo.save('devedores.xlsx')
         else:
             print("Informe um valor correto 1,2,3 ou 4")
-
+            menu()
 def leitura(): 
     excluizero()
     max_linha= planilha1.max_row
     for i in range (1, max_linha+1):
         if not planilha1.cell(row=i, column=1).value == None:    
-            print(planilha1.cell(row=i, column=1).value, end="-")
+            print(planilha1.cell(row=i, column=1).value, end=" - ")
             print(planilha1.cell(row=i, column=2).value, end=" ")
-            print(planilha1.cell(row=i, column=3).value, end="\n")           
+            print(planilha1.cell(row=i, column=3).value, end=" ")
+            print("Ultima Atualização:", end=' ')
+            print(planilha1.cell(row=i, column=4).value, end="\n")           
             print(linha)
 
 def verifica_registro():
@@ -52,6 +58,8 @@ def verifica_registro():
 def cadastro():
     devedores = ()
     moeda = "R$"
+    dataatual = date.today()
+    data = dataatual.strftime('%d/%m/%Y')
     try: 
         consultados = verifica_registro()
         devedor = str(input("Insira o nome do devedor a ser cadastrado: ")).lower()
@@ -60,7 +68,7 @@ def cadastro():
         if devedor not in consultados:
             divida = str(input('Digite o Valor da Divida: R$'))
             divida = divida.replace(",",".")
-            devedores = devedor,moeda, divida
+            devedores = devedor,moeda, divida,data
             planilha1.append(devedores)
             arquivo.save('devedores.xlsx')
         else:
@@ -75,6 +83,7 @@ def cadastro():
                 pos = consultados.index(devedor)
                 valor = float(planilha1['C'+str(pos+1)].value)+float(somar)
                 planilha1['C'+str(pos+1)] = str(valor)
+                planilha1['D'+str(pos+1)] = str(data)
                 print(linha)
                 print("Novo Valor de R${} atualizado para {}".format(planilha1['C'+str(pos+1)].value, devedor))
             elif fin == "2":
@@ -83,6 +92,7 @@ def cadastro():
                 pos = consultados.index(devedor)
                 valor = float(planilha1['C'+str(pos+1)].value)-float(abate)
                 planilha1['C'+str(pos+1)] = str(valor)
+                planilha1['D'+str(pos+1)] = str(data)
                 print(linha)
                 print("Novo Valor de R${} atualizado para {}".format(planilha1['C'+str(pos+1)].value, devedor))
             else:
@@ -90,6 +100,7 @@ def cadastro():
                 menu()
         excluizero()
         print(linha)
+        
     except:
         print(linha)
         print("Formato de entrada invalido")
