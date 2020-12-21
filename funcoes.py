@@ -1,4 +1,5 @@
 from openpyxl import load_workbook,Workbook
+from openpyxl.xml.constants import MAX_ROW
 
 try:
     arquivo = load_workbook("devedores.xlsx")    
@@ -13,26 +14,32 @@ def menu():
         print('\nSelecione a opção desejada:')
         print("[1] - Cadastrar Devedor")
         print("[2] - Listar Devedores")
-        print('[3] - Sair do Programa')
+        print('[3] - Deletar dados cliente')
+        print("[4] - Sair do Programa")
         op = int(input())
         print(linha)
         if op == 1:
             cadastro()
         elif op == 2:
             leitura()
-        elif op == 3:
+        elif op == 4:
             arquivo.save('devedores.xlsx')
             exit()
+        elif op == 3:
+            excluiusuario()
+            arquivo.save('devedores.xls')
         else:
-            print("Informe um valor correto 1,2 ou 3")
+            print("Informe um valor correto 1,2,3 ou 4")
 
 def leitura(): 
+    excluizero()
     max_linha= planilha1.max_row
-    for i in range (2, max_linha+1):
-        print(planilha1.cell(row=i, column=1).value, end="-")
-        print(planilha1.cell(row=i, column=2).value, end=" ")
-        print(planilha1.cell(row=i, column=3).value, end="\n")           
-        print(linha)
+    for i in range (1, max_linha+1):
+        if not planilha1.cell(row=i, column=1).value == None:    
+            print(planilha1.cell(row=i, column=1).value, end="-")
+            print(planilha1.cell(row=i, column=2).value, end=" ")
+            print(planilha1.cell(row=i, column=3).value, end="\n")           
+            print(linha)
 
 def verifica_registro():
     consultados = []
@@ -81,9 +88,36 @@ def cadastro():
             else:
                 print("Digite um valor valido, 1 ou 2")
                 menu()
+        excluizero()
         print(linha)
     except:
         print(linha)
         print("Formato de entrada invalido")
         print(linha)
         menu()
+    
+def excluizero():
+    for i in range(1, planilha1.max_row+1):
+        if planilha1.cell(row=i, column=3).value == "0" or planilha1.cell(row=i, column=3).value == "0.0":
+            planilha1.delete_rows(i)
+    for i in range(1, planilha1.max_row+1):
+        if planilha1.cell(row=i, column=1).value == None:
+            planilha1.delete_rows(i)
+
+def excluiusuario():
+   
+    try: 
+        consultados = verifica_registro()
+        devedor = str(input("Insira o nome do devedor a ser removido: ")).lower()
+        devedor = devedor.capitalize()
+        pos = consultados.index(devedor)
+        print("Deseja realmente remover {} da lista, você perdera os valores salvos".format(devedor))
+        o = int(input("[1] - Sim \n[2] - Não\n"))
+    except:
+        print('Ocorreu um erro')
+        menu()
+        
+    if o == 1:
+        planilha1.delete_rows(pos+1)
+
+
