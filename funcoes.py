@@ -54,8 +54,11 @@ def cadastro():
         if devedor not in consultados:
             divida = str(input('Digite o Valor da Divida: R$'))
             divida = divida.replace(",",".")
-            if divida < "0":
+            divida = float(divida)
+            if divida < 0:
+                print(linha)
                 print("Insira apenas valores positivos\nOperação cancelada!")
+                print(linha)
                 menu()
             devedores = divida,devedor,data,divida
             planilha1.append(devedores)
@@ -69,12 +72,15 @@ def cadastro():
             fin = input("[1] Somar a Divida \n[2] Abater Divida:\n")
             if fin == "1":
                 somar = str(input("Digite o valor da divida a SOMAR [+]:  "))
-                somar = somar.replace(",",".")  
-                if somar < "0":
+                somar = somar.replace(",",".")
+                somar = float(somar)  
+                if somar < 0:
+                    print(linha)
                     print("Insira apenas valores positivos\nOperação cancelada!")
+                    print(linha)
                     menu()
                 pos = consultados.index(devedor)
-                valor = float(planilha1['A'+str(pos+1)].value)+float(somar)
+                valor = float(planilha1['A'+str(pos+1)].value)+somar
                 planilha1['A'+str(pos+1)] = str(valor)
                 for i in range (2, max_coluna+2):
                     if planilha1.cell(row=pos+1, column=i).value == None:
@@ -85,8 +91,14 @@ def cadastro():
             elif fin == "2":
                 abate = str(input("Digite o valor a ser ABATIDO [-]:  "))
                 abate = abate.replace(",",".")
+                abate = float(abate)
+                if abate < 0:
+                    print(linha)
+                    print("Insira apenas valores positivos\nOperação cancelada!")
+                    print(linha)
+                    menu()
                 pos = consultados.index(devedor)
-                valor = float(planilha1['A'+str(pos+1)].value)-float(abate)
+                valor = float(planilha1['A'+str(pos+1)].value)-abate
                 planilha1['A'+str(pos+1)] = str(valor)
                 for i in range(2, max_coluna+2):
                     if planilha1.cell(row=pos+1, column=i).value == None:
@@ -118,8 +130,7 @@ def leitura():
         for j in range(2, max_coluna+2):
             if planilha1.cell(row=i, column=j).value == None and planilha1.cell(row=i, column=j-1).value != None:
                 print((planilha1.cell(row=i, column=j-2).value), end=" ")
-        print("R$:", end='')
-        print(planilha1.cell(row=i, column=1).value, end="\n")                  
+        print("R$ {:.2f}\n".format(float(planilha1.cell(row=i, column=1).value)))                  
         print(linha)
 
 def relatorio():
@@ -132,12 +143,14 @@ def relatorio():
         pos = registro.index(devedor)
         print("Exibindo resultados para {}".format(devedor))
         for j in range(3, max_coluna+1):
-            if j%2==0:
-                print("R$",end="")
-                print(planilha1.cell(row=pos+1, column=j).value, end="\n")
-            else:
-                print(planilha1.cell(row=pos+1, column=j).value, end=" ")
-        print("Resultado Geral: {}".format(planilha1.cell(row=pos+1, column=1).value))   
+            if planilha1.cell(row=pos+1, column=j).value != None:
+                if j%2==0:
+                    print("R$: {:.2f}".format(float(planilha1.cell(row=pos+1, column=j).value)))
+                else:
+                    print(planilha1.cell(row=pos+1, column=j).value, end=" ")
+        total = planilha1.cell(row=pos+1, column=1).value
+        print(linha)
+        print("Resultado Geral: {:.2f}".format(float(total)))   
         print(linha)
     except: 
         print("Usuario invalido")
