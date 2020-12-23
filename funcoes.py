@@ -143,7 +143,6 @@ def relatorio():
         print("Usuario invalido")
         menu()
     
-    
 def verifica_registro():
     consultados = []
     max_linha= planilha1.max_row
