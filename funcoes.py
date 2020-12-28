@@ -9,9 +9,7 @@ try:
 except:
     arquivo = Workbook()
     
-linha = "----------------------------------------------------"
 planilha1 = arquivo.active
-
 
 def sobre():
     messagebox.showinfo(title="Debt Book",message="Programa gratuito desevolvido para distribuição com foco no pequeno comerciante, com este programa você será capaz de manusear dados sem ter nenhum conhecimento de planilhas.\nPara maiores informações ou sugestões: Rafaelmafra@live.com")
@@ -41,14 +39,16 @@ def cadastronovo(valor, devedor,data):
         elif divida > 0:
             devedores = divida,dev,atual,divida
             planilha1.append(devedores)
-            arquivo.save('devedores.xlsx')
+            save()
             limpa()
             clearFrame(quadro3)
             lb2['text']= "Valores Salvos\nOperação Concluída!"
+            save()
     except:
         limpa()
         clearFrame(quadro3)
         lb2['text']= "Insira apenas valores Numericos\nOperação cancelada!"
+
 def cadastro(user):
     dataatual = date.today()
     data = dataatual.strftime('%d/%m/%Y')
@@ -68,57 +68,80 @@ def cadastro(user):
         else:
             max_coluna = planilha1.max_column
             lb2["text"]= "Usuario já cadastrado\nInforme o tipo de operação financeira:"
-            b0 = Button(quadro3, text="Somar Dívida", command=lambda:opsoma(max_coluna,data,devedor,consultados))
+            b0 = Button(quadro3, text="Somar Dívida", command=lambda:entradasoma(max_coluna,data,devedor,consultados))
             b0.place(x=35,y=10)
-            b1= Button(quadro3, text="Abater Divida", command=lambda:opabate(max_coluna,data,devedor,consultados))
+            b1= Button(quadro3, text="Abater Divida", command=lambda:entradaabate(max_coluna,data,devedor,consultados))
             b1.place(x=170,y=10)
-              
-                    
-                    
-        arquivo.save('devedores.xlsx')     
-        print(linha)
-        
+    
     except:
-        print(linha)
+       
         print("Formato de entrada invalido")
-        print(linha)
-
+        
+def save():
+    arquivo.save('devedores.xlsx')
 
 def leitura():
+    clearFrame(quadro2)
+    lb1['text']="Lista De Devedores"
     max_linha= planilha1.max_row
     max_coluna= planilha1.max_column
+    scroll_bar = Scrollbar(quadro)
+    scroll_bar.pack( side = RIGHT, fill = Y)
+    text = Text(quadro,bg="#5f9ea0",padx=10, yscrollcommand= scroll_bar.set)
+    scroll_bar.config( command = text.yview ) 
     for i in range (1, max_linha+1):
         if planilha1.cell(row=i, column=1).value == "0.0" or planilha1.cell(row=i, column=1).value == None:
             continue
-          
-        print(planilha1.cell(row=i, column=2).value, end="\n")
-        print("data:", end=' ')
+        text.insert(INSERT,".:"+planilha1.cell(row=i, column=2).value+":.\n")
+        text.pack()
         for j in range(2, max_coluna+2):
             if planilha1.cell(row=i, column=j).value == None and planilha1.cell(row=i, column=j-1).value != None:
-                print((planilha1.cell(row=i, column=j-2).value), end=" ")
-        print("R$ {:.2f}\n".format(float(planilha1.cell(row=i, column=1).value)))                  
-        print(linha)
+                text.insert(INSERT,planilha1.cell(row=i, column=j-2).value+" ")
+                text.pack()
+        text.insert(INSERT,"R$ {:.2f} \n\n".format(float(planilha1.cell(row=i, column=1).value)))
+        text.pack()        
+                          
+def relatorio(): 
+    lb1['text'] ="Relatório Detalhado"
+    lb2['text']="Digite o nome do cliente a ser pesquisado"
+    vuser = StringVar()   
+    b1 = Entry(quadro3, textvariable=vuser)
+    b1.place(x=85,y=0)
+    b2 = Button(quadro3, text="Verificar",command=lambda:relatorioexec(vuser.get()) )
+    b2.place(x=120,y=30)
 
-def relatorio():
+def relatorioexec(user):
     max_coluna = planilha1.max_column
+    clearFrame(quadro3)
     try:
-        devedor = str(input('Digite o nome do cliente a ser pesquisado:')).lower()
-        print(linha)
+        clearFrame(quadro2)
+        quadro4 = Frame(quadro,bg="#5f9ea0")
+        quadro4.place(x=0,y=78,width=285,height=265)
+        lb1['text']="Relatório Detalhado"
+        max_coluna= planilha1.max_column
+        scroll_bar = Scrollbar(quadro4)
+        scroll_bar.pack( side = RIGHT, fill = Y)
+        text = Text(quadro4,bg="#5f9ea0",padx=10, yscrollcommand= scroll_bar.set)
+        scroll_bar.config( command = text.yview ) 
+        devedor = str(user).lower()
         devedor = devedor.capitalize()
         registro = verifica_registro()
         pos = registro.index(devedor)
-        print("Exibindo resultados para {}".format(devedor))
+        lb3["text"]="Exibindo resultados para || {} ||".format(devedor)
         for j in range(3, max_coluna+1):
             if planilha1.cell(row=pos+1, column=j).value != None:
                 if j%2==0:
-                    print("R$: {:.2f}".format(float(planilha1.cell(row=pos+1, column=j).value)))
+                    text.insert(INSERT,"R$: {:.2f}\n".format(float(planilha1.cell(row=pos+1, column=j).value)))
+                    text.pack()
                 else:
-                    print(planilha1.cell(row=pos+1, column=j).value, end=" ")
+                    text.insert(INSERT,"{} - ".format(planilha1.cell(row=pos+1, column=j).value))
+                    text.pack()
         total = planilha1.cell(row=pos+1, column=1).value
-        print(linha)
-        print("Resultado Geral: {:.2f}".format(float(total)))   
-        print(linha)
-    except: 
+      
+        text.insert(INSERT,"\nResultado Total: {:.2f}".format(float(total)))   
+        
+    except Exception as e: 
+        print(repr(e))
         print("Usuario invalido")
     
     
@@ -163,26 +186,39 @@ def clearFrame(frame):
     for widget in frame.winfo_children():
        widget.destroy()
 
-def opsoma(max_coluna,data,devedor,consultados):
-    somar = str(input("Digite o valor da divida a SOMAR [+]:  "))
+def opsoma(informado,max_coluna,data,devedor,consultados):
+    somar = str(informado)
     somar = somar.replace(",",".")
     somar = float(somar)  
     if somar < 0:
-        print(linha)
-        print("Insira apenas valores positivos\nOperação cancelada!")
-        print(linha)
-        
-    pos = consultados.index(devedor)
-    valor = float(planilha1['A'+str(pos+1)].value)+somar
-    planilha1['A'+str(pos+1)] = str(valor)
-    for i in range (2, max_coluna+2):
-        if planilha1.cell(row=pos+1, column=i).value == None:
-            planilha1.cell(row=pos+1, column=i).value = str(data)
-            planilha1.cell(row=pos+1, column=i+1).value = str(somar)
-    print(linha)
-    print("Novo Valor de R${} atualizado para {}".format(planilha1['A'+str(pos+1)].value, devedor))    
-    
-def opabate(max_coluna,data,devedor,consultados):
+        lb2['text']="Insira apenas valores positivos\nOperação cancelada!"
+        clearFrame(quadro3)
+    elif somar > 0:
+        pos = consultados.index(devedor)
+        valor = float(planilha1['A'+str(pos+1)].value)+somar
+        planilha1['A'+str(pos+1)] = str(valor)
+        i = 5
+        while i < max_coluna+2:
+            if planilha1.cell(row=pos+1, column=i).value == None:
+                planilha1.cell(row=pos+1, column=i).value = str(data)
+                planilha1.cell(row=pos+1, column=i+1).value = str(somar)
+                break
+            i+=1
+               
+        lb2['text']="O valor R$ {:.2f} foi Somado com Sucesso!\nNovo Valor de R$ {:.2f} atualizado\npara o cliente {}".format(somar,float(planilha1['A'+str(pos+1)].value), devedor)
+        clearFrame(quadro3)
+
+def entradasoma(max_coluna,data,devedor,consultados):
+    clearFrame(quadro3)
+    lb1['text']="Somar Dívida"
+    lb2["text"]="Insira O valor Para Somar"
+    vsoma=StringVar()
+    tsoma=Entry(quadro3, textvariable=vsoma)
+    tsoma.place(x=10,y=10)
+    b1 = Button(quadro3, text="Somar Valor", command=lambda:opsoma(vsoma.get(),max_coluna,data,devedor,consultados))
+    b1.place(x=10,y=70)
+
+def entradaabate(max_coluna,data,devedor,consultados):
     limpa()
     clearFrame(quadro3)
     lb1['text']="Abater Dívida"
@@ -203,13 +239,16 @@ def abater(informado,max_coluna,data,devedor,consultados):
         pos = consultados.index(devedor)
         valor = float(planilha1['A'+str(pos+1)].value)-abate
         planilha1['A'+str(pos+1)] = str(valor)
-        for i in range(2, max_coluna+2):
+        i=5
+        while i < max_coluna+2:
             if planilha1.cell(row=pos+1, column=i).value == None:
                 planilha1.cell(row=pos+1, column=i).value = str(data)
                 planilha1.cell(row=pos+1, column=i+1).value = "-"+str(abate)
-        lb2['text']="O valor R$ {:.2f} foi abatido com Sucesso!\nNovo Valor de R$ {:.2f} atualizado\npara o cliente {}".format(abate,planilha1['A'+str(pos+1)].value, devedor)
+                break
+            i+=1
+        lb2['text']="O valor R$ {:.2f} foi abatido com Sucesso!\nNovo Valor de R$ {:.2f} atualizado\npara o cliente {}".format(abate,float(planilha1['A'+str(pos+1)].value), devedor)
         clearFrame(quadro3)
-        print()
+       
 def opcao(num):      
     if num == 1:
         planilha1.delete_rows(pos+1)
@@ -243,9 +282,10 @@ quadro2 = Frame(quadro,bg="#5f9ea0")
 quadro2.place(x=0,y=78,width=285,height=265)
 quadro3 = Frame(quadro2,bg="#5f9ea0")
 quadro3.place(x=0, y= 50,width=285,height=280)
-txt1 = Label(app,text=".::.Bem Vindo Ao Debt Book.::.",bg="#fff", fg="#000",font=('arial black',12))
+
+txt1 = Label(app,text=".::.Bem Vindo Ao Debt Book.::.",bg="#fff", fg="#000",font=('arial black',12),justify="center")
 txt1.place(x=5, y=5, width=500,height=30)
-txt2 = Label(app, text='Desenvolvido por Rafael Mafra, programa gratuito, proibido a venda',bg="#5f9ea0",fg="#fff")
+txt2 = Label(app, text='Desenvolvido por Rafael Mafra, programa gratuito, proibido a venda',bg="#5f9ea0",fg="#fff",justify="center")
 txt2.place(x=5, y=450, width=500, height=30)
 
 barrademenus=Menu(app)
@@ -262,10 +302,10 @@ Button(app,text="[5] - Sair do Programa", command=sair).place(x=10,y=300,width=2
 
 
 
-lb1 = Label(quadro, text="Bem Vindo!!", bg="#5f9ea0", font=("Arial",14))
+lb1 = Label(quadro, text="Bem Vindo!!", bg="#5f9ea0", font=("Arial",14),justify="center")
 lb1.pack()
-lb2 = Label(quadro2, text="", bg="#5f9ea0",font=("arial",12))
-lb2.place(x=1,y=5)
+lb2 = Label(quadro2, text="", bg="#5f9ea0",font=("arial",11),justify="center")
+lb2.place(x=0,y=5,width=285)
 lb3 = Label(quadro, text="", bg="#5f9ea0",font=("arial",12))
 lb3.place(x=1, y=50)
 
