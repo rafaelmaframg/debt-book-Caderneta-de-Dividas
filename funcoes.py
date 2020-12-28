@@ -15,8 +15,7 @@ def sobre():
     messagebox.showinfo(title="Debt Book",message="Programa gratuito desevolvido para distribuição com foco no pequeno comerciante, com este programa você será capaz de manusear dados sem ter nenhum conhecimento de planilhas.\nPara maiores informações ou sugestões: Rafaelmafra@live.com")
 
 def cadastrar():
-    limpa()
-    clearFrame(quadro3)
+    novo()
     vdev=StringVar()
     lb1["text"] = "Cadastrar Cliente"
     dev = Entry(quadro,textvariable=vdev)
@@ -81,7 +80,7 @@ def save():
     arquivo.save('devedores.xlsx')
 
 def leitura():
-    clearFrame(quadro2)
+    novo()
     lb1['text']="Lista De Devedores"
     max_linha= planilha1.max_row
     max_coluna= planilha1.max_column
@@ -102,6 +101,7 @@ def leitura():
         text.pack()        
                           
 def relatorio(): 
+    novo()
     lb1['text'] ="Relatório Detalhado"
     lb2['text']="Digite o nome do cliente a ser pesquisado"
     vuser = StringVar()   
@@ -119,14 +119,14 @@ def relatorioexec(user):
         quadro4.place(x=0,y=78,width=285,height=265)
         lb1['text']="Relatório Detalhado"
         max_coluna= planilha1.max_column
-        scroll_bar = Scrollbar(quadro4)
-        scroll_bar.pack( side = RIGHT, fill = Y)
-        text = Text(quadro4,bg="#5f9ea0",padx=10, yscrollcommand= scroll_bar.set)
-        scroll_bar.config( command = text.yview ) 
         devedor = str(user).lower()
         devedor = devedor.capitalize()
         registro = verifica_registro()
         pos = registro.index(devedor)
+        scroll_bar = Scrollbar(quadro4)
+        scroll_bar.pack( side = RIGHT, fill = Y)
+        text = Text(quadro4,bg="#5f9ea0",padx=10, yscrollcommand= scroll_bar.set)
+        scroll_bar.config( command = text.yview ) 
         lb3["text"]="Exibindo resultados para || {} ||".format(devedor)
         for j in range(3, max_coluna+1):
             if planilha1.cell(row=pos+1, column=j).value != None:
@@ -140,9 +140,8 @@ def relatorioexec(user):
       
         text.insert(INSERT,"\nResultado Total: {:.2f}".format(float(total)))   
         
-    except Exception as e: 
-        print(repr(e))
-        print("Usuario invalido")
+    except: 
+        lb3['text'] = "Usuário inválido"
     
     
 def verifica_registro():
@@ -154,8 +153,7 @@ def verifica_registro():
     return consultados
 
 def excluir():
-    limpa()
-    clearFrame(quadro3)
+    novo()
     vdev=StringVar()
     lb1["text"] = "Deletar Cliente"
     dev = Entry(quadro,textvariable=vdev)
@@ -167,19 +165,46 @@ def excluiusuario(user):
     try: 
         consultados = verifica_registro()
         devedor = str(user).lower()
-        devedor = devedor.capitalize()
-        global pos 
+        devedor = devedor.capitalize() 
+        global pos
         pos = consultados.index(devedor)
         lb2['text']= "Deseja realmente remover {}\nda lista? Você perdera os valores salvos".format(devedor)
-        opcao1=Button(quadro3, text='Sim', command=opcao(1))
-        opcao1.place(x=100, y=10)
-        opcao2=Button(quadro3, text="Não", command=opcao(2))
-        opcao2.place(x=150,y=10)
+        opcao1=Button(quadro3, text='Sim', command=lambda:opcao(1))
+        opcao1.place(x=120, y=10)
+        opcao2=Button(quadro3, text="Não", command=lambda:opcao(2))
+        opcao2.place(x=160,y=10)
+
     except:
-        lb2['text']='Ocorreu um erro, tente novamente!'
+        lb2['text']='Usuário não encontrado!'
+    
         
 def limpa():
     lb2['text']= ""
+
+def novo():
+    global quadro
+    quadro = Frame(app,borderwidth="2",bg="#5f9ea0",relief="groove")
+    quadro.place(x=215,y=100,width=290,height=350)
+    global quadro2
+    quadro2 = Frame(quadro,bg="#5f9ea0")
+    quadro2.place(x=0,y=78,width=285,height=265)
+    global quadro3
+    quadro3 = Frame(quadro2,bg="#5f9ea0")
+    quadro3.place(x=0, y= 50,width=285,height=280)
+    global lb1
+    lb1 = Label(quadro, text="Bem Vindo!!", bg="#5f9ea0", font=("Arial",14),justify="center")
+    lb1.pack()
+    global lb2
+    lb2 = Label(quadro2, text="", bg="#5f9ea0",font=("arial",11),justify="center")
+    lb2.place(x=0,y=5,width=285)
+    global lb3
+    lb3 = Label(quadro, text="", bg="#5f9ea0",font=("arial",12))
+    lb3.place(x=1, y=50)
+    txt1 = Label(app,text=".::.Bem Vindo Ao Debt Book.::.",bg="#fff", fg="#000",font=('arial black',12),justify="center")
+    txt1.place(x=5, y=5, width=500,height=30)
+    txt2 = Label(app, text='Desenvolvido por Rafael Mafra, programa gratuito, proibido a venda',bg="#5f9ea0",fg="#fff",justify="center")
+    txt2.place(x=5, y=450, width=500, height=30)
+
 
 def clearFrame(frame):
     # destroy all widgets from frame
@@ -219,8 +244,7 @@ def entradasoma(max_coluna,data,devedor,consultados):
     b1.place(x=10,y=70)
 
 def entradaabate(max_coluna,data,devedor,consultados):
-    limpa()
-    clearFrame(quadro3)
+    novo()
     lb1['text']="Abater Dívida"
     lb2["text"]="Insira O valor Para Abater"
     vabate=StringVar()
@@ -263,30 +287,13 @@ def sair():
     arquivo.save('devedores.xlsx')
     exit()
 
-def novo():
-    quadro = Frame(app,borderwidth="2",bg="#5f9ea0",relief="groove")
-    quadro.place(x=215,y=100,width=290,height=350)
-    quadro2 = Frame(quadro,bg="#5f9ea0")
-    quadro2.place(x=0,y=78,width=285,height=265)
-    quadro3 = Frame(quadro2,bg="#5f9ea0")
-    quadro3.place(x=0, y= 50,width=285,height=280)
+
 
 app = Tk()
-
 app.title(".::.Debt Book.::. Caderneta de Dívidas")
 app.geometry("510x500+300+100")
 app.configure(background="#5f9ea0")
-quadro = Frame(app,borderwidth="2",bg="#5f9ea0",relief="groove")
-quadro.place(x=215,y=100,width=290,height=350)
-quadro2 = Frame(quadro,bg="#5f9ea0")
-quadro2.place(x=0,y=78,width=285,height=265)
-quadro3 = Frame(quadro2,bg="#5f9ea0")
-quadro3.place(x=0, y= 50,width=285,height=280)
-
-txt1 = Label(app,text=".::.Bem Vindo Ao Debt Book.::.",bg="#fff", fg="#000",font=('arial black',12),justify="center")
-txt1.place(x=5, y=5, width=500,height=30)
-txt2 = Label(app, text='Desenvolvido por Rafael Mafra, programa gratuito, proibido a venda',bg="#5f9ea0",fg="#fff",justify="center")
-txt2.place(x=5, y=450, width=500, height=30)
+novo()
 
 barrademenus=Menu(app)
 app.config(menu=barrademenus)
@@ -299,15 +306,8 @@ Button(app,text="[2] - Listar Devedores", command=leitura).place(x=10,y=150,widt
 Button(app,text="[3] - Exibir Relatório detalhado", command=relatorio).place(x=10,y=200,width=200,height=40)
 Button(app,text="[4] - Deletar Devedor", command=excluir).place(x=10,y=250,width=200,height=40)
 Button(app,text="[5] - Sair do Programa", command=sair).place(x=10,y=300,width=200,height=40)
+novo()
 
-
-
-lb1 = Label(quadro, text="Bem Vindo!!", bg="#5f9ea0", font=("Arial",14),justify="center")
-lb1.pack()
-lb2 = Label(quadro2, text="", bg="#5f9ea0",font=("arial",11),justify="center")
-lb2.place(x=0,y=5,width=285)
-lb3 = Label(quadro, text="", bg="#5f9ea0",font=("arial",12))
-lb3.place(x=1, y=50)
 
 
 
