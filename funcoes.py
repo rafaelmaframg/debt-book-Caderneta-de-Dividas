@@ -1,7 +1,6 @@
 from openpyxl import load_workbook,Workbook
 from datetime import date
 from tkinter import *
-from tkinter import ttk
 from tkinter import messagebox
 
 try:
@@ -25,56 +24,52 @@ def cadastrar():
 
 def cadastronovo(valor, devedor,data):
     try:
+        novo()
         divida = str(valor)
         divida = divida.replace(",",".")
         divida = float(divida)
-        dev = devedor
-        atual = data
         if divida < 0:
-            limpa()
-            clearFrame(quadro3)
             lb2['text']= "Insira apenas valores positivos\nOperação cancelada!"
 
         elif divida > 0:
-            devedores = divida,dev,atual,divida
+            devedores = divida,devedor,data,divida
             planilha1.append(devedores)
             save()
-            limpa()
-            clearFrame(quadro3)
-            lb2['text']= "Valores Salvos\nOperação Concluída!"
-            save()
+            lb2['text']= "Valores Salvos para {}\nOperação Concluída!".format(devedor)
     except:
-        limpa()
-        clearFrame(quadro3)
-        lb2['text']= "Insira apenas valores Numericos\nOperação cancelada!"
+        novo()
+        lb2['text']= "Insira apenas valores Numericos\n   Operação cancelada!"
 
 def cadastro(user):
+    novo()
     dataatual = date.today()
     data = dataatual.strftime('%d/%m/%Y')
     try: 
         consultados = verifica_registro()
         devedor = str(user).lower()
         devedor = devedor.capitalize()
-        
-        if devedor not in consultados:
-            vdiv = StringVar()
-            tdiv = Entry(quadro3,textvariable=vdiv)
-            tdiv.place(x=10,y=0,width=270,height=20)
-            lb2['text'] = "Insira o valor da dívida"
-            b1 = Button(quadro3, text="Registrar", command=lambda:cadastronovo(vdiv.get(),devedor,data))
-            b1.place(x=50,y=50)
-            
-        else:
-            max_coluna = planilha1.max_column
-            lb2["text"]= "Usuario já cadastrado\nInforme o tipo de operação financeira:"
-            b0 = Button(quadro3, text="Somar Dívida", command=lambda:entradasoma(max_coluna,data,devedor,consultados))
-            b0.place(x=35,y=10)
-            b1= Button(quadro3, text="Abater Divida", command=lambda:entradaabate(max_coluna,data,devedor,consultados))
-            b1.place(x=170,y=10)
-    
+        if len(devedor) == 0 or devedor == " ":
+            lb2['text']="Insira um nome de usuário"
+            devedor = "invalido"
+        if devedor != "invalido":
+            if devedor not in consultados:
+                vdiv = StringVar()
+                tdiv = Entry(quadro3,textvariable=vdiv)
+                tdiv.place(x=10,y=0,width=270,height=20)
+                lb2['text'] = "Insira o valor da dívida para\n O Cliente {}".format(devedor)
+                b1 = Button(quadro3, text="Registrar", command=lambda:cadastronovo(vdiv.get(),devedor,data))
+                b1.place(x=120,y=30)
+                
+            else:
+                max_coluna = planilha1.max_column
+                lb2["text"]= "Usuario {} já cadastrado\nInforme o tipo de operação financeira:".format(devedor)
+                b0 = Button(quadro3, text="Somar Dívida", command=lambda:entradasoma(max_coluna,data,devedor,consultados))
+                b0.place(x=35,y=10)
+                b1= Button(quadro3, text="Abater Divida", command=lambda:entradaabate(max_coluna,data,devedor,consultados))
+                b1.place(x=170,y=10)   
     except:
-       
-        print("Formato de entrada invalido")
+    
+        lb2['text']="Formato de entrada invalido"
         
 def save():
     arquivo.save('devedores.xlsx')
@@ -112,20 +107,17 @@ def relatorio():
 
 def relatorioexec(user):
     max_coluna = planilha1.max_column
-    clearFrame(quadro3)
+    novo()
     try:
-        clearFrame(quadro2)
-        quadro4 = Frame(quadro,bg="#5f9ea0")
-        quadro4.place(x=0,y=78,width=285,height=265)
         lb1['text']="Relatório Detalhado"
         max_coluna= planilha1.max_column
         devedor = str(user).lower()
         devedor = devedor.capitalize()
         registro = verifica_registro()
         pos = registro.index(devedor)
-        scroll_bar = Scrollbar(quadro4)
+        scroll_bar = Scrollbar(quadro2)
         scroll_bar.pack( side = RIGHT, fill = Y)
-        text = Text(quadro4,bg="#5f9ea0",padx=10, yscrollcommand= scroll_bar.set)
+        text = Text(quadro2,bg="#5f9ea0",padx=10, yscrollcommand= scroll_bar.set)
         scroll_bar.config( command = text.yview ) 
         lb3["text"]="Exibindo resultados para || {} ||".format(devedor)
         for j in range(3, max_coluna+1):
@@ -137,7 +129,6 @@ def relatorioexec(user):
                     text.insert(INSERT,"{} - ".format(planilha1.cell(row=pos+1, column=j).value))
                     text.pack()
         total = planilha1.cell(row=pos+1, column=1).value
-      
         text.insert(INSERT,"\nResultado Total: {:.2f}".format(float(total)))   
         
     except: 
@@ -162,6 +153,7 @@ def excluir():
     botao.place(x=100,y=50,width=100,height=20)
 
 def excluiusuario(user): 
+    novo()
     try: 
         consultados = verifica_registro()
         devedor = str(user).lower()
@@ -178,9 +170,6 @@ def excluiusuario(user):
         lb2['text']='Usuário não encontrado!'
     
         
-def limpa():
-    lb2['text']= ""
-
 def novo():
     global quadro
     quadro = Frame(app,borderwidth="2",bg="#5f9ea0",relief="groove")
@@ -205,19 +194,14 @@ def novo():
     txt2 = Label(app, text='Desenvolvido por Rafael Mafra, programa gratuito, proibido a venda',bg="#5f9ea0",fg="#fff",justify="center")
     txt2.place(x=5, y=450, width=500, height=30)
 
-
-def clearFrame(frame):
-    # destroy all widgets from frame
-    for widget in frame.winfo_children():
-       widget.destroy()
-
 def opsoma(informado,max_coluna,data,devedor,consultados):
+    novo()
     somar = str(informado)
     somar = somar.replace(",",".")
     somar = float(somar)  
     if somar < 0:
         lb2['text']="Insira apenas valores positivos\nOperação cancelada!"
-        clearFrame(quadro3)
+        
     elif somar > 0:
         pos = consultados.index(devedor)
         valor = float(planilha1['A'+str(pos+1)].value)+somar
@@ -228,37 +212,37 @@ def opsoma(informado,max_coluna,data,devedor,consultados):
                 planilha1.cell(row=pos+1, column=i).value = str(data)
                 planilha1.cell(row=pos+1, column=i+1).value = str(somar)
                 break
-            i+=1
-               
+            i+=1      
         lb2['text']="O valor R$ {:.2f} foi Somado com Sucesso!\nNovo Valor de R$ {:.2f} atualizado\npara o cliente {}".format(somar,float(planilha1['A'+str(pos+1)].value), devedor)
-        clearFrame(quadro3)
+        
 
 def entradasoma(max_coluna,data,devedor,consultados):
-    clearFrame(quadro3)
+    novo()
     lb1['text']="Somar Dívida"
-    lb2["text"]="Insira O valor Para Somar"
+    lb2["text"]="Insira O valor Para Somar Dívida\nAo Cliente {} ".format(devedor)
     vsoma=StringVar()
     tsoma=Entry(quadro3, textvariable=vsoma)
-    tsoma.place(x=10,y=10)
+    tsoma.place(x=90,y=10)
     b1 = Button(quadro3, text="Somar Valor", command=lambda:opsoma(vsoma.get(),max_coluna,data,devedor,consultados))
-    b1.place(x=10,y=70)
+    b1.place(x=110,y=70)
 
 def entradaabate(max_coluna,data,devedor,consultados):
     novo()
     lb1['text']="Abater Dívida"
-    lb2["text"]="Insira O valor Para Abater"
+    lb2["text"]="Insira O valor Para Abater Dívida\n Ao Cliente {}".format(devedor)
     vabate=StringVar()
     tabate=Entry(quadro3, textvariable=vabate)
-    tabate.place(x=10,y=10)
+    tabate.place(x=90,y=10)
     b1 = Button(quadro3, text="Abater Valor", command=lambda:abater(vabate.get(),max_coluna,data,devedor,consultados))
-    b1.place(x=10,y=70)
+    b1.place(x=110,y=70)
 def abater(informado,max_coluna,data,devedor,consultados):   
+    novo()
     abate = str(informado)
     abate = abate.replace(",",".")
     abate = float(abate)
     if abate < 0:
         lb2['text']="Insira apenas valores positivos\nOperação cancelada!"
-        clearFrame(quadro3)
+        
     elif abate >0 :
         pos = consultados.index(devedor)
         valor = float(planilha1['A'+str(pos+1)].value)-abate
@@ -271,41 +255,37 @@ def abater(informado,max_coluna,data,devedor,consultados):
                 break
             i+=1
         lb2['text']="O valor R$ {:.2f} foi abatido com Sucesso!\nNovo Valor de R$ {:.2f} atualizado\npara o cliente {}".format(abate,float(planilha1['A'+str(pos+1)].value), devedor)
-        clearFrame(quadro3)
-       
+        
 def opcao(num):      
     if num == 1:
+        novo()
         planilha1.delete_rows(pos+1)
         arquivo.save('devedores.xlsx')
-        clearFrame(quadro3)
         lb2['text'] = "Cliente Excluído da base de dados!!"
     elif num ==2:
+        novo()
         lb2['text']='Operação Cancelada!'
-        clearFrame(quadro3)
-
+        
 def sair():
     arquivo.save('devedores.xlsx')
     exit()
-
-
 
 app = Tk()
 app.title(".::.Debt Book.::. Caderneta de Dívidas")
 app.geometry("510x500+300+100")
 app.configure(background="#5f9ea0")
 novo()
-
 barrademenus=Menu(app)
 app.config(menu=barrademenus)
 menusobre=Menu(barrademenus, tearoff=0)
 menusobre.add_command(label="Info",command=sobre)
 menusobre.add_command(label="Sair",command=app.quit)
 barrademenus.add_cascade(label="Sobre",menu=menusobre)
-Button(app,text="[1] - Cadastrar Devedor/Dívida ", command=cadastrar).place(x=10,y=100,width=200,height=40)
-Button(app,text="[2] - Listar Devedores", command=leitura).place(x=10,y=150,width=200,height=40)
-Button(app,text="[3] - Exibir Relatório detalhado", command=relatorio).place(x=10,y=200,width=200,height=40)
-Button(app,text="[4] - Deletar Devedor", command=excluir).place(x=10,y=250,width=200,height=40)
-Button(app,text="[5] - Sair do Programa", command=sair).place(x=10,y=300,width=200,height=40)
+Button(app,text=".: Cadastrar Devedor/Dívida :.", command=cadastrar).place(x=10,y=100,width=200,height=40)
+Button(app,text=".:    Listar Devedores      :.", command=leitura).place(x=10,y=150,width=200,height=40)
+Button(app,text=".:Exibir Relatório detalhado:.", command=relatorio).place(x=10,y=200,width=200,height=40)
+Button(app,text=".:     Deletar Devedor      :.", command=excluir).place(x=10,y=250,width=200,height=40)
+Button(app,text=".:    Sair do Programa      :.", command=sair).place(x=10,y=300,width=200,height=40)
 novo()
 
 
